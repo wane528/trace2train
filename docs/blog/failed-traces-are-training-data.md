@@ -15,7 +15,7 @@ thing, which is exactly what I'd want to fine-tune away.
 And then it just... sits in the logs. Buried in LangSmith/Langfuse exports, mixed
 with retries and PII and duplicates, annoying enough to clean up that I never did.
 
-So I made a small tool for it: **[trace2train](https://github.com/wane528/trace2train)**.
+So I made a small tool for it: [**trace2train**](https://github.com/wane528/trace2train).
 It's a local CLI (no server, no account) that turns failed agent traces into SFT/DPO
 training data. Sharing it here in case it's useful to anyone else, and because I'd
 like feedback.
@@ -110,5 +110,5 @@ things up" premise.)
 What I'd love feedback on: the failure-detection rules — what am I missing? — and
 what trace sources you'd want supported next.
 
-Repo: **https://github.com/wane528/trace2train** (MIT). If you try it on real
-traces, I'd genuinely like to hear how it went.
+Repo: [github.com/wane528/trace2train](https://github.com/wane528/trace2train) (MIT).
+If you try it on real traces, I'd genuinely like to hear how it went.
