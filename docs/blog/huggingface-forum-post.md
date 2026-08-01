@@ -1,10 +1,10 @@
-# HuggingFace forum post — Show and Tell
+# HuggingFace forum post — discussion framing
 
-**Suggested category:** Show and Tell (fall back to Datasets / general if unavailable)
+**Suggested category:** Show and Tell (fall back to Research / general if unavailable)
 
 **Title:**
 
-> trace2train — turning failed agent traces into SFT/DPO data (without making up answers)
+> Are failed agent traces actually usable as fine-tuning data? (a hypothesis + a prototype)
 
 **Body:**
 
@@ -12,73 +12,56 @@
 
 Hi all,
 
-While building tool-using agents I kept running into the same waste: a good chunk
-of every run is *failures* — the model picks the wrong tool, sends malformed
-arguments, over-refuses a harmless request. Those failures are exactly the kind of
-behavior I'd want to fine-tune away, but they just sit in LangSmith/Langfuse
-exports, mixed with retries, PII, and duplicates.
+I've been sitting on a hypothesis and I'm not sure it holds up, so I'd rather put
+it to people who actually fine-tune than keep guessing on my own.
 
-So I built a small local CLI to turn them into training data:
-**trace2train** — https://github.com/wane528/trace2train (`pip install trace2train`, MIT).
+**The hypothesis:** when a tool-using agent fails — picks the wrong tool, sends
+malformed arguments, over-refuses a harmless request — that failure is a concrete
+example of the behavior you'd want to train away. So in principle, the failures
+piling up in your LangSmith/Langfuse logs are fine-tuning data you're throwing out.
 
-**What it does**
+That *sounds* right to me. But I genuinely don't know if it survives contact with
+reality, and there are two things I'm unsure about.
 
-Two main commands:
-- `inspect` — rules-only, no LLM, no API key. Tells you how many traces failed,
-  how dirty they are (PII/dupes/noise), and how many are actually trainable,
-  before you spend anything.
-- `convert` — turns the usable failures into LLaMA-Factory-ready SFT/DPO JSONL,
-  with PII redaction, dedup, eval-set leak filtering, and full provenance on
-  every record.
+**Question 1: are these failures actually usable as training data at all?**
 
-**A concrete example**
+Or does it backfire? My worry is that "corrected" failure traces might be lower
+quality than they look — you're teaching the model a fix you inferred, not a fix
+you verified. Has anyone tried training on agent failures? Did it help, do
+nothing, or hurt? I'd love real experience here, positive or negative.
 
-A failure from the bundled demo — the agent has a `get_weather` tool but reaches
-for `calculator`:
+**Question 2: where should the line be for "correctable from the trace"?**
 
-```
-user:      What's the weather in Berlin?
-assistant: [tool_call] calculator(expr="weather Berlin")
-tool:      {"error": "invalid expression"}
-assistant: I got 42.
-```
+This is the part I keep going back and forth on. Some failures have an obvious
+right answer *in the trace itself*: the agent called `calculator` for a weather
+question when it had a `get_weather` tool — the fix is right there. But others
+need external ground truth: "did the code actually pass its tests?", "is this fact
+accurate?", "did the task complete?" — the trace alone can't tell you.
 
-The right fix is obvious from the trace, so `convert` turns it into a training pair:
+My instinct is: only generate a training pair when the fix is derivable from the
+trace, and *skip* the rest rather than invent a plausible-looking answer, because
+confidently-wrong labels seem worse than fewer labels. But I'm not confident that
+boundary is in the right place — maybe it's too conservative and throws away
+usable signal, or maybe even the "obvious" cases are shakier than I think.
 
-```json
-{
-  "conversations": [
-    {"from": "human", "value": "What's the weather in Berlin?"},
-    {"from": "gpt",   "value": "[tool_call] get_weather(city=\"Berlin\")"}
-  ]
-}
-```
+**The prototype (context, not a pitch)**
 
-**The design choice I'd most like feedback on**
+To actually test this instead of just theorizing, I built a small local CLI —
+[trace2train](https://github.com/wane528/trace2train) (`pip install trace2train`,
+MIT). It detects the failures with rules, then does exactly the "skip if not
+derivable" thing above, and outputs LLaMA-Factory SFT/DPO JSONL. It's very much
+v0.1 — I've only run it on a small public-dataset slice and a synthetic Langfuse
+run, so I can't claim it works, only that it lets me try the idea.
 
-It only writes a corrected sample when the right answer is *derivable from the
-trace itself*. If the failure needs external ground truth ("did the code pass its
-tests?", "is this fact accurate?"), it marks the sample `skipped` instead of
-inventing an answer. My reasoning: a dataset full of confident-but-wrong
-"corrections" is worse than no dataset. But I'm genuinely unsure where exactly
-that line should sit — curious what people here think.
-
-**Honest status**
-
-Early v0.1. Validated only on a small slice of a public dataset and an end-to-end
-Langfuse v4 run on synthetic data — not a benchmark, not an accuracy claim.
-Inputs today: LangSmith JSONL, a generic messages JSONL, and Langfuse v4 snapshots.
-
-**Try it (30s, no data or key needed):**
+If you want to see the shape of it in 30s (no data or key needed):
 
 ```
 pip install trace2train
 trace2train inspect --demo
 ```
 
-Questions I'd love input on:
-1. The failure-detection rules — what failure modes am I missing?
-2. What trace sources would you want supported next?
-3. Does the "skip instead of fabricate" boundary match your intuition?
+But honestly the tool is secondary. What I'm really after is whether the two
+questions above have known answers I'm just not aware of. If this is a solved
+problem, or a known-bad idea, I'd rather hear that now.
 
-Thanks for reading — happy to answer anything.
+Thanks — genuinely curious what people think.
