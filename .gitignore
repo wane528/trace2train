@@ -1,0 +1,42 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Env / secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Output / data (never commit real traces or generated data)
+output/
+out/
+out_*/
+data/
+*.jsonl.bak
+
+# Local code intelligence index
+.codegraph/
+
+# Internal planning material
+docs/superpowers/
+docs/MVP_PLAN.md
+
+# Root-level raw trace snapshots; synthetic fixtures remain trackable.
+/*.jsonl
+
+# Interrupted Langfuse atomic writes
+/.*.jsonl.tmp
