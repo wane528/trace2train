@@ -35,6 +35,9 @@ data/
 docs/superpowers/
 docs/MVP_PLAN.md
 
+# Outreach / promo drafts (not project docs)
+docs/blog/
+
 # Root-level raw trace snapshots; synthetic fixtures remain trackable.
 /*.jsonl
 
