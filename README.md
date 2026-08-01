@@ -7,6 +7,8 @@
 ![python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license: MIT](https://img.shields.io/badge/license-MIT-green)
 
+**English · [简体中文](README.zh-CN.md)**
+
 Your agent picks the wrong tool, passes bad arguments, returns prose where JSON
 was required, over-refuses a benign request, or ignores a system rule.
 trace2train turns those failed traces into training data to fix exactly that —
@@ -75,7 +77,7 @@ kind of failures you have and how much is usable *before* you spend a cent.
 Requires Python 3.11+.
 
 ```bash
-pip install .                 # normal use
+pip install trace2train       # normal use
 pip install -e ".[dev]"       # development (tests + lint)
 ```
 
