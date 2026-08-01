@@ -46,6 +46,7 @@ kind of failures you have and how much is usable *before* you spend a cent.
 - [Scope](#scope--what-it-fixes-and-what-it-wont)
 - [Langfuse](#langfuse)
 - [Design principles](#design-principles)
+- [FAQ](#faq)
 - [Contributing & license](#contributing--license)
 
 ## Features
@@ -257,6 +258,37 @@ Additional public validation evidence:
 <sub>On a non-UTF-8 Windows console, output automatically falls back to ASCII
 borders/symbols. For Unicode box-drawing, run under UTF-8:
 `python -X utf8 -m trace2train.cli ...`.</sub>
+
+## FAQ
+
+**How do I turn my agent's failures into fine-tuning data?**
+Point trace2train at your trace export: `trace2train convert traces.jsonl -o out`.
+It detects the behavioral failures (wrong tool, bad args, over-refusal, …) and
+writes SFT/DPO JSONL you can feed to a trainer.
+
+**Can I convert LangSmith / Langfuse logs into an SFT or DPO dataset?**
+Yes. LangSmith JSONL exports work directly. For Langfuse, `trace2train langfuse
+pull` snapshots your v4 observations first, then `convert` them. See
+[Supported inputs](#supported-inputs).
+
+**How do I build a tool-calling / function-calling fine-tuning dataset from agent traces?**
+That's the core use case — trace2train specializes in tool-call and agent-behavior
+failures (wrong tool chosen, malformed arguments, lost context, wrong output
+format, over-refusals) and produces training pairs that correct exactly those.
+
+**Does it work offline / without an API key?**
+`inspect` is fully offline (rules only). `convert` needs an LLM to derive the
+corrected answer; without a key it writes the raw failed traces to
+`needs_review/` for you to hand-fix instead of fabricating data.
+
+**What format is the output, and can I use it with LLaMA-Factory?**
+Output is LLaMA-Factory-ready ShareGPT JSONL (`train_sft.jsonl` /
+`train_dpo.jsonl`) plus a `meta.json` audit.
+
+**How is this different from just dumping my logs into a trainer?**
+It decontaminates (PII redaction, dedup, eval-set leak filtering) and, crucially,
+only emits data when the fix is derivable from the trace — failures needing
+external ground truth are skipped, not fabricated.
 
 ## Contributing & license
 
