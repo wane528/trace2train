@@ -2,7 +2,8 @@
 
 > **Turn your agent's tool-call & behavior failures into clean SFT/DPO training data.**
 
-![status: alpha](https://img.shields.io/badge/status-alpha-orange)
+[![PyPI](https://img.shields.io/pypi/v/trace2train)](https://pypi.org/project/trace2train/)
+[![CI](https://github.com/wane528/trace2train/actions/workflows/ci.yml/badge.svg)](https://github.com/wane528/trace2train/actions/workflows/ci.yml)
 ![python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![license: MIT](https://img.shields.io/badge/license-MIT-green)
 
